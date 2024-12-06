@@ -1,0 +1,12 @@
+FROM python:3.11-slim
+USER root
+
+# Set working directory inside the container
+WORKDIR /opt/Testing
+
+# Install dependencies
+COPY python_packages.txt /opt/tests/python_packages.txt
+RUN pip install --no-cache-dir -r python_packages.txt
+
+# Command to run the tests
+# CMD ["pytest"]

@@ -1,0 +1,49 @@
+services:
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.tests
+    container_name: tests-server
+    depends_on:
+      api-mock:
+        condition: service_started
+    environment:
+      REQUESTS_CA_BUNDLE: /path/to/ca-chain.cert.pem
+
+
+    working_dir: /opt/tests
+    volumes:
+      - ./tests:/opt/tests
+      - api_mock_certs:/root/ca/rsa/volumed_dir
+    entrypoint: ["sh", "-c", "while true; do sleep 1000; done"]
+
+  api-mock:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api-mock-server
+    restart: always
+    volumes:
+      - api_mock_certs:/root/ca/rsa/volumed_dir
+    ports:
+      - "8080:80"
+      - "8443:443"
+
+  mock-database:
+    image: postgres:latest
+    container_name: mock-db-server
+    restart: always
+    environment:
+      POSTGRES_USER: anton
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mockdb
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+# Almost empty database
+#      - ./database/empty.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+
+
+volumes:
+  api_mock_certs:
